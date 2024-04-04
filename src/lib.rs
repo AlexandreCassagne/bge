@@ -60,7 +60,7 @@ impl Bge {
     {
         let tokenizer = Tokenizer::from_file(tokenizer_file_path.as_ref().to_str().unwrap())
             .map_err(|e| anyhow!(e))?;
-        let model = ort::Session::builder()?.with_model_from_file(model_file_path)?;
+        let model = ort::Session::builder()?.commit_from_file(model_file_path)?;
         Ok(Self { tokenizer, model })
     }
 
@@ -123,7 +123,7 @@ impl Bge {
         let outputs = self.model.run(inputs).map_err(BgeError::OnnxRuntimeError)?;
 
         let output = outputs["last_hidden_state"]
-            .extract_tensor::<f32>()
+            .try_extract_tensor::<f32>()
             .map_err(BgeError::OnnxRuntimeError)?;
         let view = output.view();
 
